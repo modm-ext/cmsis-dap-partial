@@ -1,0 +1,30 @@
+name: Update
+
+on:
+  schedule:
+    - cron:  '42 9 * * 3'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Configure Git
+        run: |
+          git config --global user.email "bot@modm.io"
+          git config --global user.name "modm update bot"
+      - name: Update repository
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          wget -qL https://raw.githubusercontent.com/modm-ext/partial/main/partial.py
+          python3 partial.py -v arm-software/CMSIS-DAP \
+              "Firmware/Include/*" \
+              "Firmware/Source/*" \
+              "Firmware/Config/*" \
+              LICENSE
+      - name: Git push
+        run: |
+          git push origin main
